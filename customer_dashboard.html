@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Dashboard - TailorSuite</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --sidebar-bg: #2c3e50;
@@ -35,7 +37,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styles - Matching the image */
+        /* Sidebar Styles */
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
@@ -43,6 +45,21 @@
             min-height: 100vh;
             position: fixed;
             padding: 20px 0;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
         }
 
         .logo {
@@ -163,7 +180,7 @@
             display: block;
         }
 
-        /* Dashboard Stats - Matching the image */
+        /* Dashboard Stats */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -239,7 +256,7 @@
             color: var(--text-primary);
         }
 
-        /* Quick Actions - Matching the image */
+        /* Quick Actions */
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -324,7 +341,7 @@
             color: var(--sidebar-active);
         }
 
-        /* Order Table - Matching the image */
+        /* Order Table */
         .order-table {
             width: 100%;
             border-collapse: collapse;
@@ -538,6 +555,21 @@
             display: block;
         }
 
+        /* Make Payment Page with Scroll */
+        #make-payment-page {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #make-payment-page.active {
+            display: block;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -583,6 +615,47 @@
             color: var(--text-secondary);
         }
 
+        /* Chart Container */
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom Scrollbar for Make Payment Page */
+        #make-payment-page::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #make-payment-page::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #make-payment-page::-webkit-scrollbar-thumb {
+            background-color: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        #make-payment-page::-webkit-scrollbar-thumb:hover {
+            background-color: #a8a8a8;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -613,7 +686,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar - Matching the image -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
             <i class="fas fa-cut"></i>
@@ -670,11 +743,9 @@
     <div class="main-content">
         <div class="header">
             <h1 id="page-title">Customer Dashboard</h1>
-
-            
             <div class="user-info">
-                <img src="https://via.placeholder.com/40" alt="User">
-                <span>John Doe</span>
+                <img id="user-avatar" src="" alt="User">
+                <span id="user-name">Loading...</span>
                 <div class="dropdown-menu">
                     <a href="#" onclick="showPage('profile')"><i class="fas fa-user"></i> Profile</a>
                     <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -682,9 +753,9 @@
             </div>
         </div>
 
-        <!-- Dashboard Page - Matching the image -->
+        <!-- Dashboard Page -->
         <div id="dashboard-page" class="page-content active">
-            <!-- Stats Cards - Matching the image -->
+            <!-- Stats Cards -->
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-icon orders">
@@ -692,7 +763,7 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-title">Active Orders</div>
-                        <div class="stat-value" id="active-orders-count">3</div>
+                        <div class="stat-value" id="active-orders-count">0</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -701,7 +772,7 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-title">Pending Payments</div>
-                        <div class="stat-value" id="pending-payments-count">2</div>
+                        <div class="stat-value" id="pending-payments-count">0</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -710,7 +781,7 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-title">Delivered Orders</div>
-                        <div class="stat-value" id="delivered-orders-count">7</div>
+                        <div class="stat-value" id="delivered-orders-count">0</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -719,12 +790,12 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-title">Last Login</div>
-                        <div class="stat-value">Apr 4, 2025</div>
+                        <div class="stat-value" id="last-login">Loading...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Actions - Matching the image -->
+            <!-- Quick Actions -->
             <div class="quick-actions">
                 <div class="action-btn" onclick="showPage('new-order')">
                     <i class="fas fa-plus-circle"></i>
@@ -747,69 +818,24 @@
             <div class="dashboard-sections">
                 <div class="section">
                     <h2><i class="fas fa-clipboard-list"></i> Active Orders</h2>
-                    <table class="order-table">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Garment</th>
-                            <th>Status</th>
-                            <th>Delivery Date</th>
-                        </tr>
-                        <tr>
-                            <td class="order-id">#ORD1024</td>
-                            <td>Custom Suit</td>
-                            <td><span class="order-status status-in-progress">In Progress</span></td>
-                            <td>Apr. 10, 2025 <button class="btn btn-sm" onclick="viewOrderDetails('ORD1024')">→</button></td>
-                        </tr>
-                    </table>
+                    <div id="active-orders-table">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
 
                 <div class="section">
                     <h2><i class="fas fa-money-bill-wave"></i> Pending Payments</h2>
-                    <table class="order-table">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Amount</th>
-                            <th>Due Date</th>
-                            <th>Action</th>
-                        </tr>
-                        <tr>
-                            <td class="order-id">#ORD1024</td>
-                            <td>$120.00</td>
-                            <td>Apr. 5, 2025</td>
-                            <td><button class="btn btn-sm" onclick="showPaymentModal('ORD1024')">Pay Now</button></td>
-                        </tr>
-                        <tr>
-                            <td class="order-id">#ORD1023</td>
-                            <td>$85.50</td>
-                            <td>Apr. 8, 2025</td>
-                            <td><button class="btn btn-sm" onclick="showPaymentModal('ORD1023')">Pay Now</button></td>
-                        </tr>
-                    </table>
+                    <div id="pending-payments-table">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
             </div>
 
             <div class="section">
-                <h2><i class="fas fa-check-circle"></i> Delivered Orders</h2>
-                <table class="order-table">
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Garment</th>
-                        <th>Delivery Date</th>
-                        <th>Action</th>
-                    </tr>
-                    <tr>
-                        <td class="order-id">#ORD1021</td>
-                        <td>Custom Shirt</td>
-                        <td>Mar. 30, 2025</td>
-                        <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1021')">View</button></td>
-                    </tr>
-                    <tr>
-                        <td class="order-id">#ORD1018</td>
-                        <td>Formal Pants</td>
-                        <td>Mar. 22, 2025</td>
-                        <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1018')">View</button></td>
-                    </tr>
-                </table>
+                <h2><i class="fas fa-chart-line"></i> Order History</h2>
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -840,35 +866,35 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
                             <label>Chest</label>
-                            <input type="number" placeholder="38" min="20" max="60">
+                            <input type="number" id="chest-measurement" placeholder="38" min="20" max="60">
                         </div>
                         <div>
                             <label>Waist</label>
-                            <input type="number" placeholder="32" min="20" max="60">
+                            <input type="number" id="waist-measurement" placeholder="32" min="20" max="60">
                         </div>
                         <div>
                             <label>Hips</label>
-                            <input type="number" placeholder="40" min="20" max="60">
+                            <input type="number" id="hips-measurement" placeholder="40" min="20" max="60">
                         </div>
                         <div>
                             <label>Length</label>
-                            <input type="number" placeholder="30" min="20" max="60">
+                            <input type="number" id="length-measurement" placeholder="30" min="20" max="60">
                         </div>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="deliveryDate">Delivery Date</label>
-                    <input type="date" id="deliveryDate" value="2025-04-10" min="2025-04-06" required>
+                    <input type="date" id="deliveryDate" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Payment Option</label>
                     <div class="payment-options">
                         <label class="payment-option">
-                            <input type="radio" name="payment" value="paynow" checked>
+                            <input type="radio" name="payment" value="credit" checked>
                             <i class="fas fa-credit-card payment-icon"></i>
-                            Pay Now
+                            Credit Card
                         </label>
                         <label class="payment-option paypal">
                             <input type="radio" name="payment" value="paypal">
@@ -888,23 +914,23 @@
                     </div>
                     
                     <!-- Payment Details Forms -->
-                    <div id="paynow-details" class="payment-details">
+                    <div id="credit-details" class="payment-details">
                         <div class="form-group">
                             <label>Card Number</label>
-                            <input type="text" placeholder="1234 5678 9012 3456">
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
                         </div>
                         <div class="form-group">
                             <label>Expiry Date</label>
-                            <input type="text" placeholder="MM/YY">
+                            <input type="text" id="expiryDate" placeholder="MM/YY">
                         </div>
                         <div class="form-group">
                             <label>CVV</label>
-                            <input type="text" placeholder="123">
+                            <input type="text" id="cvv" placeholder="123">
                         </div>
                     </div>
                     
                     <div id="paypal-details" class="payment-details">
-                        <button class="btn" style="background-color: var(--paypal-color); color: #253b80;">
+                        <button type="button" id="paypal-button" class="btn" style="background-color: var(--paypal-color); color: #253b80;">
                             <i class="fab fa-cc-paypal"></i> Pay with PayPal
                         </button>
                     </div>
@@ -912,9 +938,9 @@
                     <div id="mpesa-details" class="payment-details">
                         <div class="form-group">
                             <label>M-Pesa Phone Number</label>
-                            <input type="tel" placeholder="254712345678">
+                            <input type="tel" id="mpesaNumber" placeholder="254712345678">
                         </div>
-                        <button class="btn btn-success">
+                        <button type="button" id="mpesa-button" class="btn btn-success">
                             <i class="fas fa-mobile-alt"></i> Request Payment
                         </button>
                     </div>
@@ -935,120 +961,36 @@
         <div id="track-orders-page" class="page-content">
             <h2><i class="fas fa-search"></i> Track Orders</h2>
             
-            <table class="order-table">
-                <tr>
-                    <th>Order ID</th>
-                    <th>Garment</th>
-                    <th>Status</th>
-                    <th>Delivery Date</th>
-                    <th>Action</th>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1024</td>
-                    <td>Custom Suit</td>
-                    <td><span class="order-status status-in-progress">In Progress</span></td>
-                    <td>Apr. 10, 2025</td>
-                    <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1024')">View</button></td>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1023</td>
-                    <td>Formal Shirt</td>
-                    <td><span class="order-status status-pending">Pending</span></td>
-                    <td>Apr. 15, 2025</td>
-                    <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1023')">View</button></td>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1021</td>
-                    <td>Custom Shirt</td>
-                    <td><span class="order-status status-delivered">Delivered</span></td>
-                    <td>Mar. 30, 2025</td>
-                    <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1021')">View</button></td>
-                </tr>
-            </table>
+            <div id="track-orders-table">
+                <div class="spinner"></div>
+            </div>
         </div>
 
         <!-- Cancel Orders Page -->
         <div id="cancel-orders-page" class="page-content">
             <h2><i class="fas fa-times-circle"></i> Cancel Orders</h2>
             
-            <table class="order-table">
-                <tr>
-                    <th>Order ID</th>
-                    <th>Garment</th>
-                    <th>Status</th>
-                    <th>Delivery Date</th>
-                    <th>Action</th>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1024</td>
-                    <td>Custom Suit</td>
-                    <td><span class="order-status status-in-progress">In Progress</span></td>
-                    <td>Apr. 10, 2025</td>
-                    <td><button class="btn btn-danger btn-sm" onclick="cancelOrder('ORD1024')">Cancel</button></td>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1023</td>
-                    <td>Formal Shirt</td>
-                    <td><span class="order-status status-pending">Pending</span></td>
-                    <td>Apr. 15, 2025</td>
-                    <td><button class="btn btn-danger btn-sm" onclick="cancelOrder('ORD1023')">Cancel</button></td>
-                </tr>
-            </table>
+            <div id="cancel-orders-table">
+                <div class="spinner"></div>
+            </div>
         </div>
 
         <!-- Make Payment Page -->
         <div id="make-payment-page" class="page-content">
             <h2><i class="fas fa-money-bill-wave"></i> Make Payment</h2>
             
-            <table class="order-table">
-                <tr>
-                    <th>Order ID</th>
-                    <th>Amount</th>
-                    <th>Due Date</th>
-                    <th>Action</th>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1024</td>
-                    <td>$120.00</td>
-                    <td>Apr. 5, 2025</td>
-                    <td><button class="btn btn-sm" onclick="showPaymentModal('ORD1024')">Pay Now</button></td>
-                </tr>
-                <tr>
-                    <td class="order-id">#ORD1023</td>
-                    <td>$85.50</td>
-                    <td>Apr. 8, 2025</td>
-                    <td><button class="btn btn-sm" onclick="showPaymentModal('ORD1023')">Pay Now</button></td>
-                </tr>
-            </table>
+            <div id="make-payment-table">
+                <div class="spinner"></div>
+            </div>
         </div>
 
         <!-- Payment History Page -->
         <div id="payment-history-page" class="page-content">
             <h2><i class="fas fa-history"></i> Payment History</h2>
             
-            <table class="order-table">
-                <tr>
-                    <th>Payment ID</th>
-                    <th>Order ID</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Method</th>
-                </tr>
-                <tr>
-                    <td>#PAY2045</td>
-                    <td class="order-id">#ORD1024</td>
-                    <td>$120.00</td>
-                    <td>Apr. 2, 2025</td>
-                    <td>Credit Card</td>
-                </tr>
-                <tr>
-                    <td>#PAY2042</td>
-                    <td class="order-id">#ORD1021</td>
-                    <td>$85.50</td>
-                    <td>Mar. 30, 2025</td>
-                    <td>PayPal</td>
-                </tr>
-            </table>
+            <div id="payment-history-table">
+                <div class="spinner"></div>
+            </div>
         </div>
 
         <!-- Profile Page -->
@@ -1058,17 +1000,17 @@
             <form id="profileForm">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" value="john.doe@example.com" required>
+                    <input type="email" id="email" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="address">Address</label>
-                    <textarea id="address" rows="3" required>123 Main Street, Nairobi, Kenya</textarea>
+                    <textarea id="address" rows="3" required></textarea>
                 </div>
                 
                 <div class="form-group">
                     <label for="phone">Contact Number</label>
-                    <input type="tel" id="phone" value="+254712345678" required>
+                    <input type="tel" id="phone" required>
                 </div>
                 
                 <div class="form-group">
@@ -1076,19 +1018,19 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
                             <label>Chest</label>
-                            <input type="number" value="38" min="20" max="60">
+                            <input type="number" id="profile-chest" min="20" max="60">
                         </div>
                         <div>
                             <label>Waist</label>
-                            <input type="number" value="32" min="20" max="60">
+                            <input type="number" id="profile-waist" min="20" max="60">
                         </div>
                         <div>
                             <label>Hips</label>
-                            <input type="number" value="40" min="20" max="60">
+                            <input type="number" id="profile-hips" min="20" max="60">
                         </div>
                         <div>
                             <label>Length</label>
-                            <input type="number" value="30" min="20" max="60">
+                            <input type="number" id="profile-length" min="20" max="60">
                         </div>
                     </div>
                 </div>
@@ -1101,23 +1043,9 @@
         <div id="notifications-page" class="page-content">
             <h2><i class="fas fa-bell"></i> Notifications</h2>
             
-            <table class="order-table">
-                <tr>
-                    <th>Date</th>
-                    <th>Message</th>
-                    <th>Action</th>
-                </tr>
-                <tr>
-                    <td>Apr 4, 2025</td>
-                    <td>Your order #ORD1021 has been delivered successfully!</td>
-                    <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1021')">View</button></td>
-                </tr>
-                <tr>
-                    <td>Apr 2, 2025</td>
-                    <td>Your order #ORD1024 is now in production</td>
-                    <td><button class="btn btn-sm" onclick="viewOrderDetails('ORD1024')">View</button></td>
-                </tr>
-            </table>
+            <div id="notifications-table">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
@@ -1132,12 +1060,12 @@
             <form id="paymentForm">
                 <div class="form-group">
                     <label for="paymentOrder">Order ID</label>
-                    <input type="text" id="paymentOrder" value="ORD1024" readonly>
+                    <input type="text" id="paymentOrder" readonly>
                 </div>
                 
                 <div class="form-group">
                     <label for="paymentAmount">Amount</label>
-                    <input type="text" id="paymentAmount" value="$120.00" readonly>
+                    <input type="text" id="paymentAmount" readonly>
                 </div>
                 
                 <div class="form-group">
@@ -1169,20 +1097,20 @@
                 <div id="creditCardDetails" class="payment-details">
                     <div class="form-group">
                         <label>Card Number</label>
-                        <input type="text" placeholder="1234 5678 9012 3456">
+                        <input type="text" id="modalCardNumber" placeholder="1234 5678 9012 3456">
                     </div>
                     <div class="form-group">
                         <label>Expiry Date</label>
-                        <input type="text" placeholder="MM/YY">
+                        <input type="text" id="modalExpiryDate" placeholder="MM/YY">
                     </div>
                     <div class="form-group">
                         <label>CVV</label>
-                        <input type="text" placeholder="123">
+                        <input type="text" id="modalCvv" placeholder="123">
                     </div>
                 </div>
                 
                 <div id="paypalDetails" class="payment-details" style="display: none;">
-                    <button class="btn" style="background-color: var(--paypal-color); color: #253b80;">
+                    <button type="button" id="modalPaypalButton" class="btn" style="background-color: var(--paypal-color); color: #253b80;">
                         <i class="fab fa-cc-paypal"></i> Pay with PayPal
                     </button>
                 </div>
@@ -1190,9 +1118,9 @@
                 <div id="mpesaDetails" class="payment-details" style="display: none;">
                     <div class="form-group">
                         <label>M-Pesa Phone Number</label>
-                        <input type="tel" placeholder="254712345678">
+                        <input type="tel" id="modalMpesaNumber" placeholder="254712345678">
                     </div>
-                    <button class="btn btn-success">
+                    <button type="button" id="modalMpesaButton" class="btn btn-success">
                         <i class="fas fa-mobile-alt"></i> Request Payment
                     </button>
                 </div>
@@ -1200,11 +1128,11 @@
                 <div id="bankDetails" class="payment-details" style="display: none;">
                     <div class="form-group">
                         <label>Bank Name</label>
-                        <input type="text" placeholder="e.g. Equity Bank">
+                        <input type="text" id="bankName" placeholder="e.g. Equity Bank">
                     </div>
                     <div class="form-group">
                         <label>Account Number</label>
-                        <input type="text" placeholder="1234567890">
+                        <input type="text" id="accountNumber" placeholder="1234567890">
                     </div>
                 </div>
                 
@@ -1255,115 +1183,565 @@
     </div>
 
     <script>
-        // Current user data
-        const currentUser = {
-            name: "John Doe",
-            email: "john.doe@example.com",
-            address: "123 Main Street, Nairobi, Kenya",
-            phone: "+254712345678",
-            measurements: {
-                chest: 38,
-                waist: 32,
-                hips: 40,
-                length: 30
-            },
-            lastLogin: "Apr 4, 2025"
-        };
+        // API Configuration
+        const API_BASE_URL = 'http://localhost/MyTailorSuite/';
+        let authToken = 'mock-token'; // For demo purposes
+        let currentUser = {};
+        let orders = [];
+        let payments = [];
+        let notifications = [];
+        let ordersChart = null;
 
-        // Orders data
-        let orders = [
-            {
-                id: "ORD1024",
-                type: "Custom Suit",
-                date: "Apr 2, 2025",
-                status: "In Progress",
-                measurements: "Chest: 38\", Waist: 32\", Length: 42\"",
-                payment: "Pending",
-                amount: "$120.00",
-                delivery: "Apr. 10, 2025",
-                tailor: "Tailor 3 (Specialty: Formal Wear)"
-            },
-            {
-                id: "ORD1023",
-                type: "Formal Shirt",
-                date: "Apr 1, 2025",
-                status: "Pending",
-                measurements: "Chest: 38\", Waist: 32\", Length: 30\"",
-                payment: "Pending",
-                amount: "$85.50",
-                delivery: "Apr. 15, 2025",
-                tailor: "Not assigned yet"
-            },
-            {
-                id: "ORD1021",
-                type: "Custom Shirt",
-                date: "Mar 25, 2025",
-                status: "Delivered",
-                measurements: "Chest: 38\", Waist: 32\", Length: 30\"",
-                payment: "PayPal",
-                amount: "$85.50",
-                delivery: "Mar. 30, 2025",
-                tailor: "Tailor 3 (Specialty: Formal Wear)"
-            },
-            {
-                id: "ORD1018",
-                type: "Formal Pants",
-                date: "Mar 15, 2025",
-                status: "Delivered",
-                measurements: "Waist: 32\", Length: 42\", Inseam: 32\"",
-                payment: "Credit Card",
-                amount: "$75.00",
-                delivery: "Mar. 22, 2025",
-                tailor: "Tailor 1 (Specialty: Formal Wear)"
-            }
-        ];
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+            loadOrders();
+            loadPayments();
+            loadNotifications();
+            initializeForms();
+            setupEventListeners();
+            setMinDeliveryDate();
+        });
 
-        // Payments data
-        let payments = [
-            {
-                id: "PAY2045",
-                orderId: "ORD1024",
-                amount: "$120.00",
-                date: "Apr. 2, 2025",
-                method: "Credit Card"
-            },
-            {
-                id: "PAY2042",
-                orderId: "ORD1021",
-                amount: "$85.50",
-                date: "Mar. 30, 2025",
-                method: "PayPal"
+        function setMinDeliveryDate() {
+            const today = new Date();
+            const minDate = new Date(today.setDate(today.getDate() + 7)); // Minimum 7 days from today
+            const formattedDate = minDate.toISOString().split('T')[0];
+            document.getElementById('deliveryDate').min = formattedDate;
+        }
+
+        function loadUserProfile() {
+            axios.get(`${API_BASE_URL}/profile.php`)
+                .then(response => {
+                    currentUser = response.data;
+                    updateUserInfo();
+                    populateProfileForm();
+                })
+                .catch(error => {
+                    console.error('Error loading user profile:', error);
+                    showNotification('Failed to load profile data', 'error');
+                });
+        }
+
+        function loadOrders() {
+            axios.get(`${API_BASE_URL}/orders.php`)
+                .then(response => {
+                    orders = response.data;
+                    updateStats();
+                    renderActiveOrders();
+                    renderTrackOrders();
+                    renderCancelOrders();
+                    renderOrdersChart();
+                })
+                .catch(error => {
+                    console.error('Error loading orders:', error);
+                    showNotification('Failed to load orders', 'error');
+                });
+        }
+
+        function loadPayments() {
+            axios.get(`${API_BASE_URL}/payments.php`)
+                .then(response => {
+                    payments = response.data;
+                    renderPendingPayments();
+                    renderPaymentHistory();
+                    renderMakePayments();
+                })
+                .catch(error => {
+                    console.error('Error loading payments:', error);
+                    showNotification('Failed to load payment history', 'error');
+                });
+        }
+
+        function loadNotifications() {
+            axios.get(`${API_BASE_URL}/notifications.php`)
+                .then(response => {
+                    notifications = response.data;
+                    renderNotifications();
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    showNotification('Failed to load notifications', 'error');
+                });
+        }
+
+        function updateUserInfo() {
+            document.getElementById('user-name').textContent = currentUser.name || 'User';
+            document.getElementById('user-avatar').src = currentUser.avatar || 'https://via.placeholder.com/40';
+            document.getElementById('last-login').textContent = currentUser.lastLogin ? 
+                new Date(currentUser.lastLogin).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 
+                'Not available';
+        }
+
+        function populateProfileForm() {
+            document.getElementById('email').value = currentUser.email || '';
+            document.getElementById('address').value = currentUser.address || '';
+            document.getElementById('phone').value = currentUser.phone || '';
+            
+            if (currentUser.measurements) {
+                document.getElementById('profile-chest').value = currentUser.measurements.chest || '';
+                document.getElementById('profile-waist').value = currentUser.measurements.waist || '';
+                document.getElementById('profile-hips').value = currentUser.measurements.hips || '';
+                document.getElementById('profile-length').value = currentUser.measurements.length || '';
             }
-        ];
+        }
 
         function updateStats() {
-            // Calculate counts
-            const activeOrders = orders.filter(order => order.status === "In Progress").length;
-            const pendingPayments = orders.filter(order => order.payment === "Pending").length;
-            const deliveredOrders = orders.filter(order => order.status === "Delivered").length;
+            const activeOrders = orders.filter(order => order.status === 'In Progress' || order.status === 'Pending').length;
+            const pendingPayments = orders.filter(order => order.paymentStatus === 'Pending').length;
+            const deliveredOrders = orders.filter(order => order.status === 'Delivered').length;
             
-            // Update the UI
             document.getElementById('active-orders-count').textContent = activeOrders;
             document.getElementById('pending-payments-count').textContent = pendingPayments;
             document.getElementById('delivered-orders-count').textContent = deliveredOrders;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the dashboard
-            updateUserInfo();
-            initializeForms();
-            updateStats();
+        function renderActiveOrders() {
+            const activeOrders = orders.filter(order => order.status === 'In Progress' || order.status === 'Pending');
+            const container = document.getElementById('active-orders-table');
             
-            // Set default measurements in new order form
-            document.querySelectorAll('.measurement-input input').forEach(input => {
-                const measurementType = input.closest('.measurement-input').querySelector('label').textContent.toLowerCase();
-                if (currentUser.measurements[measurementType]) {
-                    input.value = currentUser.measurements[measurementType];
-                }
+            if (activeOrders.length === 0) {
+                container.innerHTML = '<p>No active orders found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Garment</th>
+                        <th>Status</th>
+                        <th>Delivery Date</th>
+                    </tr>
+            `;
+            
+            activeOrders.forEach(order => {
+                const statusClass = order.status === 'In Progress' ? 'status-in-progress' : 
+                                  order.status === 'Delivered' ? 'status-delivered' : 'status-pending';
+                
+                html += `
+                    <tr>
+                        <td class="order-id">#${order.id}</td>
+                        <td>${order.type}</td>
+                        <td><span class="order-status ${statusClass}">${order.status}</span></td>
+                        <td>${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} 
+                            <button class="btn btn-sm" onclick="viewOrderDetails('${order.id}')">→</button>
+                        </td>
+                    </tr>
+                `;
             });
             
-            // Payment method change handler
-            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderPendingPayments() {
+            const pendingPayments = orders.filter(order => order.paymentStatus === 'Pending');
+            const container = document.getElementById('pending-payments-table');
+            
+            if (pendingPayments.length === 0) {
+                container.innerHTML = '<p>No pending payments found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            pendingPayments.forEach(order => {
+                html += `
+                    <tr>
+                        <td class="order-id">#${order.id}</td>
+                        <td>$${order.amount.toFixed(2)}</td>
+                        <td>${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td><button class="btn btn-sm" onclick="showPaymentModal('${order.id}')">Pay Now</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderTrackOrders() {
+            const container = document.getElementById('track-orders-table');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<p>No orders found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Garment</th>
+                        <th>Status</th>
+                        <th>Delivery Date</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            orders.forEach(order => {
+                const statusClass = order.status === 'In Progress' ? 'status-in-progress' : 
+                                  order.status === 'Delivered' ? 'status-delivered' : 'status-pending';
+                
+                html += `
+                    <tr>
+                        <td class="order-id">#${order.id}</td>
+                        <td>${order.type}</td>
+                        <td><span class="order-status ${statusClass}">${order.status}</span></td>
+                        <td>${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td><button class="btn btn-sm" onclick="viewOrderDetails('${order.id}')">View</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderCancelOrders() {
+            const cancelableOrders = orders.filter(order => order.status === 'Pending' || order.status === 'In Progress');
+            const container = document.getElementById('cancel-orders-table');
+            
+            if (cancelableOrders.length === 0) {
+                container.innerHTML = '<p>No orders available for cancellation.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Garment</th>
+                        <th>Status</th>
+                        <th>Delivery Date</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            cancelableOrders.forEach(order => {
+                const statusClass = order.status === 'In Progress' ? 'status-in-progress' : 'status-pending';
+                
+                html += `
+                    <tr>
+                        <td class="order-id">#${order.id}</td>
+                        <td>${order.type}</td>
+                        <td><span class="order-status ${statusClass}">${order.status}</span></td>
+                        <td>${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="cancelOrder('${order.id}')">Cancel</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderMakePayments() {
+            const pendingPayments = orders.filter(order => order.paymentStatus === 'Pending');
+            const container = document.getElementById('make-payment-table');
+            
+            if (pendingPayments.length === 0) {
+                container.innerHTML = '<p>No payments due at this time.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            pendingPayments.forEach(order => {
+                html += `
+                    <tr>
+                        <td class="order-id">#${order.id}</td>
+                        <td>$${order.amount.toFixed(2)}</td>
+                        <td>${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td><button class="btn btn-sm" onclick="showPaymentModal('${order.id}')">Pay Now</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderPaymentHistory() {
+            const container = document.getElementById('payment-history-table');
+            
+            if (payments.length === 0) {
+                container.innerHTML = '<p>No payment history found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Order ID</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Method</th>
+                    </tr>
+            `;
+            
+            payments.forEach(payment => {
+                html += `
+                    <tr>
+                        <td>#${payment.id}</td>
+                        <td class="order-id">#${payment.orderId}</td>
+                        <td>$${payment.amount.toFixed(2)}</td>
+                        <td>${new Date(payment.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td>${payment.method}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notifications-table');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<p>No notifications found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Date</th>
+                        <th>Message</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            notifications.forEach(notification => {
+                html += `
+                    <tr>
+                        <td>${new Date(notification.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td>${notification.message}</td>
+                        <td>
+                            ${notification.orderId ? 
+                                `<button class="btn btn-sm" onclick="viewOrderDetails('${notification.orderId}')">View</button>` : 
+                                ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderOrdersChart() {
+            const ctx = document.getElementById('ordersChart').getContext('2d');
+            
+            // Group orders by month
+            const ordersByMonth = {};
+            orders.forEach(order => {
+                const date = new Date(order.createdAt || order.deliveryDate);
+                const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!ordersByMonth[monthYear]) {
+                    ordersByMonth[monthYear] = 0;
+                }
+                ordersByMonth[monthYear]++;
+            });
+            
+            // Sort months chronologically
+            const sortedMonths = Object.keys(ordersByMonth).sort();
+            const labels = sortedMonths.map(month => {
+                const [year, monthNum] = month.split('-');
+                return new Date(year, monthNum - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            });
+            const data = sortedMonths.map(month => ordersByMonth[month]);
+            
+            if (ordersChart) {
+                ordersChart.destroy();
+            }
+            
+            ordersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Orders',
+                        data: data,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeForms() {
+            // Profile form submission
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updatedProfile = {
+                    ...currentUser,
+                    email: document.getElementById('email').value,
+                    address: document.getElementById('address').value,
+                    phone: document.getElementById('phone').value,
+                    measurements: {
+                        chest: parseInt(document.getElementById('profile-chest').value) || 0,
+                        waist: parseInt(document.getElementById('profile-waist').value) || 0,
+                        hips: parseInt(document.getElementById('profile-hips').value) || 0,
+                        length: parseInt(document.getElementById('profile-length').value) || 0
+                    }
+                };
+                
+                // In a real app, this would be a PUT request to the API
+                currentUser = updatedProfile;
+                updateUserInfo();
+                showNotification('Profile updated successfully!', 'success');
+            });
+            
+            // Order form submission
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const paymentMethod = document.querySelector('#orderForm input[name="payment"]:checked').value;
+                const paymentStatus = paymentMethod === 'cash' ? 'Pending' : 'Paid';
+                
+                const newOrder = {
+                    id: 'ORD' + Math.floor(1000 + Math.random() * 9000),
+                    type: document.getElementById('clothingType').value,
+                    measurements: {
+                        chest: parseInt(document.getElementById('chest-measurement').value) || 0,
+                        waist: parseInt(document.getElementById('waist-measurement').value) || 0,
+                        hips: parseInt(document.getElementById('hips-measurement').value) || 0,
+                        length: parseInt(document.getElementById('length-measurement').value) || 0
+                    },
+                    deliveryDate: document.getElementById('deliveryDate').value,
+                    paymentMethod: paymentMethod,
+                    paymentStatus: paymentStatus,
+                    status: "Pending",
+                    amount: Math.floor(50 + Math.random() * 200),
+                    createdAt: new Date().toISOString(),
+                    tailor: "Not assigned yet"
+                };
+                
+                // In a real app, this would be a POST request to the API
+                orders.unshift(newOrder);
+                
+                // If payment was made, create a payment record
+                if (paymentStatus === 'Paid') {
+                    const newPayment = {
+                        id: 'PAY' + Math.floor(2000 + Math.random() * 1000),
+                        orderId: newOrder.id,
+                        amount: newOrder.amount,
+                        date: new Date().toISOString(),
+                        method: paymentMethod
+                    };
+                    payments.unshift(newPayment);
+                }
+                
+                // Update UI
+                updateStats();
+                renderActiveOrders();
+                renderTrackOrders();
+                renderCancelOrders();
+                renderMakePayments();
+                renderPaymentHistory();
+                renderOrdersChart();
+                
+                showNotification('Order placed successfully!', 'success');
+                showPage('track-orders');
+            });
+            
+            // Payment form submission
+            document.getElementById('paymentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const orderId = document.getElementById('paymentOrder').value;
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+                
+                if (orderIndex !== -1) {
+                    const paymentMethod = document.querySelector('#paymentForm input[name="paymentMethod"]:checked').value;
+                    
+                    // Update order
+                    orders[orderIndex].paymentStatus = 'Paid';
+                    orders[orderIndex].paymentMethod = paymentMethod;
+                    
+                    // Create payment record
+                    const newPayment = {
+                        id: 'PAY' + Math.floor(2000 + Math.random() * 1000),
+                        orderId: orderId,
+                        amount: parseFloat(document.getElementById('paymentAmount').value.replace('$', '')),
+                        date: new Date().toISOString(),
+                        method: paymentMethod
+                    };
+                    
+                    payments.unshift(newPayment);
+                    
+                    // Update UI
+                    updateStats();
+                    renderActiveOrders();
+                    renderPendingPayments();
+                    renderMakePayments();
+                    renderPaymentHistory();
+                    
+                    showNotification('Payment processed successfully!', 'success');
+                    closeModal('paymentModal');
+                    showPage('payment-history');
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Payment method change handler in order form
+            document.querySelectorAll('#orderForm input[name="payment"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('credit-details').style.display = 'none';
+                    document.getElementById('paypal-details').style.display = 'none';
+                    document.getElementById('mpesa-details').style.display = 'none';
+                    document.getElementById('cash-details').style.display = 'none';
+                    
+                    if (this.value === 'credit') {
+                        document.getElementById('credit-details').style.display = 'block';
+                    } else if (this.value === 'paypal') {
+                        document.getElementById('paypal-details').style.display = 'block';
+                    } else if (this.value === 'mpesa') {
+                        document.getElementById('mpesa-details').style.display = 'block';
+                    } else if (this.value === 'cash') {
+                        document.getElementById('cash-details').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Payment method change handler in payment modal
+            document.querySelectorAll('#paymentForm input[name="paymentMethod"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     document.getElementById('creditCardDetails').style.display = 'none';
                     document.getElementById('paypalDetails').style.display = 'none';
@@ -1382,113 +1760,69 @@
                 });
             });
             
-            // New order payment method change handler
-            document.querySelectorAll('#orderForm input[name="payment"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    document.getElementById('paynow-details').style.display = 'none';
-                    document.getElementById('paypal-details').style.display = 'none';
-                    document.getElementById('mpesa-details').style.display = 'none';
-                    document.getElementById('cash-details').style.display = 'none';
-                    
-                    if (this.value === 'paynow') {
-                        document.getElementById('paynow-details').style.display = 'block';
-                    } else if (this.value === 'paypal') {
-                        document.getElementById('paypal-details').style.display = 'block';
-                    } else if (this.value === 'mpesa') {
-                        document.getElementById('mpesa-details').style.display = 'block';
-                    } else if (this.value === 'cash') {
-                        document.getElementById('cash-details').style.display = 'block';
-                    }
-                });
-            });
-            
             // Initialize with first payment method selected
-            document.querySelector('#orderForm input[value="paynow"]').dispatchEvent(new Event('change'));
-        });
-
-        function updateUserInfo() {
-            document.querySelector('.user-info span').textContent = currentUser.name;
-            document.getElementById('email').value = currentUser.email;
-            document.getElementById('address').value = currentUser.address;
-            document.getElementById('phone').value = currentUser.phone;
+            document.querySelector('#orderForm input[value="credit"]').dispatchEvent(new Event('change'));
+            document.querySelector('#paymentForm input[value="credit"]').dispatchEvent(new Event('change'));
+            
+            // PayPal button handlers
+            document.getElementById('paypal-button')?.addEventListener('click', initiatePaypalPayment);
+            document.getElementById('modalPaypalButton')?.addEventListener('click', initiatePaypalPayment);
+            
+            // M-Pesa button handlers
+            document.getElementById('mpesa-button')?.addEventListener('click', initiateMpesaPayment);
+            document.getElementById('modalMpesaButton')?.addEventListener('click', initiateMpesaPayment);
         }
 
-        function initializeForms() {
-            // Form submissions
-            document.getElementById('orderForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Create new order
-                const newOrder = {
-                    id: `ORD${Math.floor(1000 + Math.random() * 9000)}`,
-                    type: document.getElementById('clothingType').value,
-                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-                    status: "Pending",
-                    measurements: `Chest: ${document.querySelector('#new-order-page input[placeholder="38"]').value}", Waist: ${document.querySelector('#new-order-page input[placeholder="32"]').value}", Hips: ${document.querySelector('#new-order-page input[placeholder="40"]').value}", Length: ${document.querySelector('#new-order-page input[placeholder="30"]').value}"`,
-                    payment: document.querySelector('#orderForm input[name="payment"]:checked').value === 'paynow' ? 'Credit Card' : 
-                            document.querySelector('#orderForm input[name="payment"]:checked').value === 'paypal' ? 'PayPal' :
-                            document.querySelector('#orderForm input[name="payment"]:checked').value === 'mpesa' ? 'M-Pesa' : 'Cash',
-                    amount: "$" + (Math.floor(50 + Math.random() * 200)).toFixed(2),
-                    delivery: document.getElementById('deliveryDate').value,
-                    tailor: "Not assigned yet"
-                };
-                
-                orders.unshift(newOrder);
-                updateStats();
-                showNotification('Your order has been placed successfully!', 'success');
-                showPage('track-orders');
-            });
+        function initiatePaypalPayment() {
+            const orderId = document.getElementById('paymentOrder')?.value || 'NEW';
+            const amount = document.getElementById('paymentAmount')?.value.replace('$', '') || 
+                          Math.floor(50 + Math.random() * 200);
             
-            document.getElementById('profileForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Update user info
-                currentUser.email = document.getElementById('email').value;
-                currentUser.address = document.getElementById('address').value;
-                currentUser.phone = document.getElementById('phone').value;
-                
-                updateUserInfo();
-                showNotification('Profile updated successfully!', 'success');
-            });
+            showNotification('Redirecting to PayPal for payment...', 'info');
             
-            document.getElementById('paymentForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+            // In a real app, this would call your backend to create a PayPal order
+            setTimeout(() => {
+                showNotification('PayPal payment completed successfully!', 'success');
                 
-                // Process payment
-                const orderId = document.getElementById('paymentOrder').value;
-                const amount = document.getElementById('paymentAmount').value;
-                const paymentMethod = document.querySelector('#paymentForm input[name="paymentMethod"]:checked').value;
-                
-                // Update order payment status
-                const order = orders.find(o => o.id === orderId);
-                if (order) {
-                    order.payment = paymentMethod === 'credit' ? 'Credit Card' : 
-                                    paymentMethod === 'paypal' ? 'PayPal' :
-                                    paymentMethod === 'mpesa' ? 'M-Pesa' : 'Bank Transfer';
-                    order.status = "In Progress";
+                if (orderId === 'NEW') {
+                    // For new orders
+                    showPage('track-orders');
+                } else {
+                    // For existing orders
+                    closeModal('paymentModal');
+                    showPage('payment-history');
                 }
-                
-                // Add to payment history
-                const newPayment = {
-                    id: `PAY${Math.floor(2000 + Math.random() * 1000)}`,
-                    orderId: orderId,
-                    amount: amount,
-                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-                    method: paymentMethod === 'credit' ? 'Credit Card' : 
-                            paymentMethod === 'paypal' ? 'PayPal' :
-                            paymentMethod === 'mpesa' ? 'M-Pesa' : 'Bank Transfer'
-                };
-                
-                payments.unshift(newPayment);
-                updateStats();
-                
-                showNotification('Payment processed successfully!', 'success');
-                closeModal('paymentModal');
-                showPage('payment-history');
-            });
+            }, 2000);
         }
 
-        // Show page function
+        function initiateMpesaPayment() {
+            const phoneNumber = document.getElementById('mpesaNumber')?.value || 
+                              document.getElementById('modalMpesaNumber')?.value;
+            
+            if (!phoneNumber) {
+                showNotification('Please enter your M-Pesa phone number', 'error');
+                return;
+            }
+            
+            showNotification('Initiating M-Pesa payment request...', 'info');
+            
+            // In a real app, this would call your backend to initiate M-Pesa payment
+            setTimeout(() => {
+                showNotification('M-Pesa payment request sent. Check your phone to complete payment.', 'success');
+                
+                // Simulate payment completion after delay
+                setTimeout(() => {
+                    showNotification('M-Pesa payment completed successfully!', 'success');
+                    
+                    const orderId = document.getElementById('paymentOrder')?.value;
+                    if (orderId && orderId !== 'NEW') {
+                        closeModal('paymentModal');
+                        showPage('payment-history');
+                    }
+                }, 3000);
+            }, 1000);
+        }
+
         function showPage(pageId) {
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(page => {
@@ -1535,12 +1869,11 @@
             }
         }
 
-        // Modal functions
         function showPaymentModal(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
                 document.getElementById('paymentOrder').value = order.id;
-                document.getElementById('paymentAmount').value = order.amount;
+                document.getElementById('paymentAmount').value = `$${order.amount.toFixed(2)}`;
             }
             document.getElementById('paymentModal').style.display = 'flex';
         }
@@ -1550,6 +1883,9 @@
             const detailsContent = document.getElementById('orderDetailsContent');
             
             if (order) {
+                const statusClass = order.status === 'In Progress' ? 'status-in-progress' : 
+                                    order.status === 'Delivered' ? 'status-delivered' : 'status-pending';
+                
                 detailsContent.innerHTML = `
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -1557,8 +1893,7 @@
                                 <strong>Order ID:</strong> #${order.id}
                             </div>
                             <div>
-                                <span class="order-status ${order.status === 'Delivered' ? 'status-delivered' : 
-                                                         order.status === 'Pending' ? 'status-pending' : 'status-in-progress'}">
+                                <span class="order-status ${statusClass}">
                                     ${order.status}
                                 </span>
                             </div>
@@ -1569,34 +1904,39 @@
                                 <strong>Garment Type:</strong> ${order.type}
                             </div>
                             <div>
-                                <strong>Order Date:</strong> ${order.date}
+                                <strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                             </div>
                             <div>
-                                <strong>${order.status === 'Delivered' ? 'Delivered On' : 'Estimated Delivery'}:</strong> ${order.delivery}
+                                <strong>${order.status === 'Delivered' ? 'Delivered On' : 'Estimated Delivery'}:</strong> 
+                                ${new Date(order.deliveryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                             </div>
                             <div>
-                                <strong>Amount:</strong> ${order.amount}
+                                <strong>Amount:</strong> $${order.amount.toFixed(2)}
                             </div>
                         </div>
                         
                         <div style="margin: 15px 0;">
                             <strong>Measurements:</strong>
                             <div style="margin-top: 5px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
-                                ${order.measurements}
+                                ${order.measurements.chest ? `Chest: ${order.measurements.chest}"` : ''}
+                                ${order.measurements.waist ? `Waist: ${order.measurements.waist}"` : ''}
+                                ${order.measurements.hips ? `Hips: ${order.measurements.hips}"` : ''}
+                                ${order.measurements.length ? `Length: ${order.measurements.length}"` : ''}
                             </div>
                         </div>
                         
                         <div style="margin: 15px 0;">
-                            <strong>Payment Method:</strong>
+                            <strong>Payment Status:</strong>
                             <div style="margin-top: 5px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
-                                ${order.payment}
+                                ${order.paymentStatus === 'Paid' ? 'Paid' : 'Pending'} 
+                                ${order.paymentMethod ? `(${order.paymentMethod})` : ''}
                             </div>
                         </div>
                         
                         <div style="margin: 15px 0;">
                             <strong>Assigned Tailor:</strong>
                             <div style="margin-top: 5px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
-                                ${order.tailor}
+                                ${order.tailor || 'Not assigned yet'}
                             </div>
                         </div>
                         
@@ -1621,20 +1961,37 @@
         }
 
         function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+            
+            // In a real app, this would be a DELETE request to the API
             const orderIndex = orders.findIndex(o => o.id === orderId);
             if (orderIndex !== -1) {
                 orders.splice(orderIndex, 1);
-                updateStats();
-                showNotification(`Order #${orderId} has been cancelled`, 'success');
-                showPage('track-orders');
             }
+            
+            // Update UI
+            updateStats();
+            renderActiveOrders();
+            renderTrackOrders();
+            renderCancelOrders();
+            renderOrdersChart();
+            
+            showNotification(`Order #${orderId} has been cancelled`, 'success');
+            showPage('track-orders');
         }
 
         function deleteAccount() {
+            if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+                return;
+            }
+            
+            // In a real app, this would be a DELETE request to the API
             showNotification('Your account has been deleted successfully.', 'success');
             closeModal('deleteModal');
             
-            // Redirect to login or home page after deletion
+            // Simulate logout
             setTimeout(() => {
                 window.location.href = '/';
             }, 2000);
@@ -1647,7 +2004,14 @@
             }, 1500);
         }
 
-        // Notification function
+        function showDeleteConfirm() {
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function showFeedbackModal(orderId) {
+            showNotification('Feedback functionality would be implemented here', 'info');
+        }
+
         function showNotification(message, type) {
             const notification = document.getElementById('notification-toast');
             const notificationMsg = document.getElementById('notification-message');
@@ -1663,6 +2027,8 @@
                 notification.style.backgroundColor = '#27ae60';
             } else if (type === 'error') {
                 notification.style.backgroundColor = '#e74c3c';
+            } else if (type === 'info') {
+                notification.style.backgroundColor = '#3498db';
             } else {
                 notification.style.backgroundColor = '#3498db';
             }
@@ -1674,16 +2040,6 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
-        }
-
-        // Close modal when clicking outside of it
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            });
         }
     </script>
 </body>
