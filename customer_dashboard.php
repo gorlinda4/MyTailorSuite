@@ -13,23 +13,6 @@ if ($user['role'] !== 'customer') {
     header('Location: customer_dashboard.php');
     exit();
 }
-
-class Order {
-    public function getGarmentTypes() {
-        // This is a placeholder - in a real application, you would query the database
-        return [
-            ['id' => 1, 'name' => 'Shirt'],
-            ['id' => 2, 'name' => 'Pants'],
-            ['id' => 3, 'name' => 'Dress'],
-            ['id' => 4, 'name' => 'Suit'],
-            ['id' => 5, 'name' => 'Skirt'],
-        ];
-    }
-}
-
-// Get garment types for the order form
-$order = new Order();
-$garmentTypes = $order->getGarmentTypes();
 ?>
 
 <!DOCTYPE html>
