@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
+    header("Location: login.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -676,6 +684,19 @@
 
         <!-- Dashboard Page -->
         <div id="dashboard-page" class="page-content active">
+            <div class="card">
+  <h3>Total Users</h3>
+  <p><span id="total-users">...</span></p>
+</div>
+<div class="card">
+  <h3>Total Orders</h3>
+  <p><span id="total-orders">...</span></p>
+</div>
+<div class="card">
+  <h3>Total Revenue</h3>
+  <p><span id="total-revenue">...</span></p>
+</div>
+
             <!-- Stats Cards -->
             <div class="stats-container">
                 <div class="stat-card">
@@ -1319,6 +1340,7 @@
     </div>
 
     <script>
+        
         // Sample data
         const users = [
             { id: "U1021", name: "John Doe", email: "john@tailorsuite.com", role: "manager", status: "active", lastLogin: "Apr 4, 2025 – 9:03 AM" },
@@ -1922,6 +1944,19 @@
                 }
             });
         }
+
+        function loadAdminStats() {
+    fetch('api.php?action=dashboard_data')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("total-users").textContent = data.users;
+            document.getElementById("total-orders").textContent = data.orders;
+            document.getElementById("total-revenue").textContent = "KES " + data.revenue;
+        });
+}
+
+setInterval(loadAdminStats, 5000); // every 5 seconds
+loadAdminStats();
     </script>
 </body>
 </html>
