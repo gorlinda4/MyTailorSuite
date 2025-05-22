@@ -1,17 +1,8 @@
 <?php
-require_once 'auth.php';
-
-$auth = new Auth();
-
-if (!$auth->isLoggedIn()) {
-    header('Location: login.php');
-    exit();
-}
-
-$user = $auth->getCurrentUser();
-if ($user['role'] !== 'customer') {
-    header('Location: customer_dashboard.php');
-    exit();
+session_start();
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
+    header("Location: login.php");
+    exit;
 }
 ?>
 
@@ -673,6 +664,107 @@ if ($user['role'] !== 'customer') {
             background-color: #a8a8a8;
         }
 
+        /* Gallery Styles */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            height: 200px;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.03);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item .add-design {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background-color: #f5f7fa;
+            cursor: pointer;
+            border: 2px dashed #ccc;
+        }
+
+        .gallery-item .add-design i {
+            font-size: 40px;
+            color: #7f8c8d;
+        }
+
+        .gallery-item .add-design:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* About Us Styles */
+        .about-content {
+            line-height: 1.6;
+        }
+
+        .about-content h3 {
+            margin-top: 20px;
+            color: var(--text-primary);
+        }
+
+        .about-content p {
+            margin-bottom: 15px;
+        }
+
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .team-member {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .team-member img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        /* Feedback Form Styles */
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .rating-stars i {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-stars i.active {
+            color: #f1c40f;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -738,6 +830,28 @@ if ($user['role'] !== 'customer') {
             <li class="nav-item" onclick="showPage('payment-history')">
                 <i class="fas fa-history"></i>
                 <span>Payment History</span>
+            </li>
+            
+            <li class="nav-menu-title">Appointments</li>
+            <li class="nav-item" onclick="showPage('book-appointment')">
+                <i class="fas fa-calendar-check"></i>
+                <span>Book Appointment</span>
+            </li>
+            
+            <li class="nav-menu-title">Feedback & Gallery</li>
+            <li class="nav-item" onclick="showPage('feedback')">
+                <i class="fas fa-comment-alt"></i>
+                <span>Feedback</span>
+            </li>
+            <li class="nav-item" onclick="showPage('gallery')">
+                <i class="fas fa-images"></i>
+                <span>Design Gallery</span>
+            </li>
+            
+            <li class="nav-menu-title">Company</li>
+            <li class="nav-item" onclick="showPage('about-us')">
+                <i class="fas fa-info-circle"></i>
+                <span>About Us</span>
             </li>
             
             <li class="nav-menu-title">Profile</li>
@@ -1010,6 +1124,168 @@ if ($user['role'] !== 'customer') {
             </div>
         </div>
 
+        <!-- Book Appointment Page -->
+        <div id="book-appointment-page" class="page-content">
+            <h2><i class="fas fa-calendar-check"></i> Book Appointment</h2>
+            
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label for="appointmentDate">Appointment Date</label>
+                    <input type="date" id="appointmentDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointmentTime">Appointment Time</label>
+                    <select id="appointmentTime" required>
+                        <option value="">-- Select time --</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">01:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointmentPurpose">Purpose</label>
+                    <select id="appointmentPurpose" required>
+                        <option value="">-- Select purpose --</option>
+                        <option value="measurement">Measurement</option>
+                        <option value="consultation">Design Consultation</option>
+                        <option value="fitting">Fitting</option>
+                        <option value="pickup">Order Pickup</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointmentNotes">Additional Notes</label>
+                    <textarea id="appointmentNotes" rows="3"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-success">Book Appointment</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Feedback Page -->
+        <div id="feedback-page" class="page-content">
+            <h2><i class="fas fa-comment-alt"></i> Provide Feedback</h2>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackOrder">Order (Optional)</label>
+                    <select id="feedbackOrder">
+                        <option value="">-- Select order (optional) --</option>
+                        ${orders.filter(o => o.status === 'Delivered').map(o => 
+                            `<option value="${o.id}">#${o.id} - ${o.type}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Rating</label>
+                    <div class="rating-stars">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="feedbackRating" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackMessage">Your Feedback</label>
+                    <textarea id="feedbackMessage" rows="5" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackPhotos">Upload Photos (Optional)</label>
+                    <input type="file" id="feedbackPhotos" multiple>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-success">Submit Feedback</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Gallery Page -->
+        <div id="gallery-page" class="page-content">
+            <h2><i class="fas fa-images"></i> Design Gallery</h2>
+            <p>Browse our design gallery for inspiration or upload your own designs.</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="https://via.placeholder.com/300x200?text=Suit+Design" alt="Suit Design">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://via.placeholder.com/300x200?text=Dress+Design" alt="Dress Design">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://via.placeholder.com/300x200?text=Shirt+Design" alt="Shirt Design">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://via.placeholder.com/300x200?text=Traditional+Design" alt="Traditional Design">
+                </div>
+                <div class="gallery-item">
+                    <div class="add-design" onclick="document.getElementById('designUploadInput').click()">
+                        <i class="fas fa-plus-circle"></i>
+                        <input type="file" id="designUploadInput" style="display: none;" accept="image/*" multiple>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Us Page -->
+        <div id="about-us-page" class="page-content">
+            <h2><i class="fas fa-info-circle"></i> About Us</h2>
+            
+            <div class="about-content">
+                <h3>Our Story</h3>
+                <p>Founded in 2010, TailorSuite has been providing high-quality tailoring services to our valued customers for over a decade. What started as a small boutique has grown into a premier tailoring service known for our attention to detail and exceptional craftsmanship.</p>
+                
+                <h3>Our Mission</h3>
+                <p>We are committed to creating custom garments that fit perfectly and reflect your personal style. Our team of skilled tailors combines traditional techniques with modern design to deliver clothing that makes you look and feel your best.</p>
+                
+                <h3>Our Team</h3>
+                <p>Meet the talented individuals who make TailorSuite special:</p>
+                
+                <div class="team-members">
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150?text=John+Doe" alt="John Doe">
+                        <h4>John Doe</h4>
+                        <p>Master Tailor</p>
+                        <p>With 20 years of experience, John specializes in bespoke suits and formal wear.</p>
+                    </div>
+                    
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150?text=Jane+Smith" alt="Jane Smith">
+                        <h4>Jane Smith</h4>
+                        <p>Dress Designer</p>
+                        <p>Jane creates stunning custom dresses for all occasions with her unique eye for design.</p>
+                    </div>
+                    
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150?text=Mike+Johnson" alt="Mike Johnson">
+                        <h4>Mike Johnson</h4>
+                        <p>Alterations Specialist</p>
+                        <p>Mike can adjust any garment to fit perfectly, from simple hems to complex reconstructions.</p>
+                    </div>
+                </div>
+                
+                <h3>Visit Us</h3>
+                <p>Our shop is located at 123 Tailor Street, Fashion District. We're open Monday to Saturday from 9am to 6pm.</p>
+            </div>
+        </div>
+
         <!-- Profile Page -->
         <div id="profile-page" class="page-content">
             <h2><i class="fas fa-user-cog"></i> Profile Settings</h2>
@@ -1175,6 +1451,40 @@ if ($user['role'] !== 'customer') {
         </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-comment-alt"></i> Leave Feedback</h2>
+                <button class="close-btn" onclick="closeModal('feedbackModal')">&times;</button>
+            </div>
+            
+            <form id="modalFeedbackForm">
+                <div class="form-group">
+                    <label>Rating</label>
+                    <div class="rating-stars">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="modalFeedbackRating" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="modalFeedbackMessage">Your Feedback</label>
+                    <textarea id="modalFeedbackMessage" rows="5" required></textarea>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-success">Submit Feedback</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('feedbackModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
         <div class="modal-content">
@@ -1218,6 +1528,7 @@ if ($user['role'] !== 'customer') {
             initializeForms();
             setupEventListeners();
             setMinDeliveryDate();
+            setMinAppointmentDate();
         });
 
         function setMinDeliveryDate() {
@@ -1225,6 +1536,13 @@ if ($user['role'] !== 'customer') {
             const minDate = new Date(today.setDate(today.getDate() + 7)); // Minimum 7 days from today
             const formattedDate = minDate.toISOString().split('T')[0];
             document.getElementById('deliveryDate').min = formattedDate;
+        }
+
+        function setMinAppointmentDate() {
+            const today = new Date();
+            const tomorrow = new Date(today.setDate(today.getDate() + 1));
+            const formattedDate = tomorrow.toISOString().split('T')[0];
+            document.getElementById('appointmentDate').min = formattedDate;
         }
 
         function loadUserProfile() {
@@ -1697,6 +2015,66 @@ if ($user['role'] !== 'customer') {
                 showPage('track-orders');
             });
             
+            // Appointment form submission
+            document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newAppointment = {
+                    id: 'APT' + Math.floor(1000 + Math.random() * 9000),
+                    date: document.getElementById('appointmentDate').value,
+                    time: document.getElementById('appointmentTime').value,
+                    purpose: document.getElementById('appointmentPurpose').value,
+                    notes: document.getElementById('appointmentNotes').value,
+                    status: "Scheduled",
+                    createdAt: new Date().toISOString()
+                };
+                
+                // In a real app, this would be a POST request to the API
+                showNotification('Appointment booked successfully!', 'success');
+                showPage('dashboard');
+            });
+            
+            // Feedback form submission
+            document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const rating = document.getElementById('feedbackRating').value;
+                const message = document.getElementById('feedbackMessage').value;
+                const orderId = document.getElementById('feedbackOrder').value;
+                
+                const newFeedback = {
+                    id: 'FDB' + Math.floor(1000 + Math.random() * 9000),
+                    orderId: orderId || null,
+                    rating: rating,
+                    message: message,
+                    date: new Date().toISOString()
+                };
+                
+                // In a real app, this would be a POST request to the API
+                showNotification('Thank you for your feedback!', 'success');
+                showPage('dashboard');
+            });
+            
+            // Modal feedback form submission
+            document.getElementById('modalFeedbackForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const rating = document.getElementById('modalFeedbackRating').value;
+                const message = document.getElementById('modalFeedbackMessage').value;
+                
+                const newFeedback = {
+                    id: 'FDB' + Math.floor(1000 + Math.random() * 9000),
+                    orderId: document.getElementById('feedbackOrder').value,
+                    rating: rating,
+                    message: message,
+                    date: new Date().toISOString()
+                };
+                
+                // In a real app, this would be a POST request to the API
+                showNotification('Thank you for your feedback!', 'success');
+                closeModal('feedbackModal');
+            });
+            
             // Payment form submission
             document.getElementById('paymentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -1788,6 +2166,34 @@ if ($user['role'] !== 'customer') {
             // M-Pesa button handlers
             document.getElementById('mpesa-button')?.addEventListener('click', initiateMpesaPayment);
             document.getElementById('modalMpesaButton')?.addEventListener('click', initiateMpesaPayment);
+            
+            // Rating stars
+            document.querySelectorAll('.rating-stars i').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    const stars = this.parentElement.querySelectorAll('i');
+                    
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                    
+                    // Set the hidden input value
+                    const hiddenInput = this.parentElement.nextElementSibling;
+                    hiddenInput.value = rating;
+                });
+            });
+            
+            // Design upload
+            document.getElementById('designUploadInput')?.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    showNotification('Design uploaded successfully!', 'success');
+                    // In a real app, you would upload the files to the server here
+                }
+            });
         }
 
         function initiatePaypalPayment() {
@@ -1860,6 +2266,10 @@ if ($user['role'] !== 'customer') {
                 'cancel-orders': 'Cancel Orders',
                 'make-payment': 'Make Payment',
                 'payment-history': 'Payment History',
+                'book-appointment': 'Book Appointment',
+                'feedback': 'Provide Feedback',
+                'gallery': 'Design Gallery',
+                'about-us': 'About Us',
                 'profile': 'Profile Settings',
                 'notifications': 'Notifications'
             };
@@ -1879,6 +2289,14 @@ if ($user['role'] !== 'customer') {
                 document.querySelector('.nav-item[onclick="showPage(\'track-orders\')"]').classList.add('active');
             } else if (pageId === 'make-payment' || pageId === 'payment-history') {
                 document.querySelector('.nav-item[onclick="showPage(\'make-payment\')"]').classList.add('active');
+            } else if (pageId === 'book-appointment') {
+                document.querySelector('.nav-item[onclick="showPage(\'book-appointment\')"]').classList.add('active');
+            } else if (pageId === 'feedback') {
+                document.querySelector('.nav-item[onclick="showPage(\'feedback\')"]').classList.add('active');
+            } else if (pageId === 'gallery') {
+                document.querySelector('.nav-item[onclick="showPage(\'gallery\')"]').classList.add('active');
+            } else if (pageId === 'about-us') {
+                document.querySelector('.nav-item[onclick="showPage(\'about-us\')"]').classList.add('active');
             } else if (pageId === 'profile') {
                 document.querySelector('.nav-item[onclick="showPage(\'profile\')"]').classList.add('active');
             } else if (pageId === 'notifications') {
@@ -1973,6 +2391,11 @@ if ($user['role'] !== 'customer') {
             }
         }
 
+        function showFeedbackModal(orderId) {
+            document.getElementById('feedbackOrder').value = orderId;
+            document.getElementById('feedbackModal').style.display = 'flex';
+        }
+
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
@@ -2023,10 +2446,6 @@ if ($user['role'] !== 'customer') {
 
         function showDeleteConfirm() {
             document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function showFeedbackModal(orderId) {
-            showNotification('Feedback functionality would be implemented here', 'info');
         }
 
         function showNotification(message, type) {
