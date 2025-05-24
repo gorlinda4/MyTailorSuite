@@ -1,33 +1,3 @@
-<?php
-require_once 'auth.php';
-
-$auth = new Auth();
-
-if ($auth->isLoggedIn()) {
-    // Redirect to dashboard if already logged in
-    header('Location: index.php');
-    exit();
-}
-
-$error = '';
-$success = '';
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-    
-    $result = $auth->login($username, $password);
-    
-    if ($result['status'] === 'success') {
-        $success = 'Login successful! Redirecting...';
-        header('Refresh: 2; URL=index.php');
-    } else {
-        $error = $result['message'];
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,18 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <i class="fas fa-cut"></i>
             <h1>TailorSuite</h1>
         </div>
-        
-        <?php if ($error): ?>
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="success-message">
-                <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($success); ?>
-            </div>
-        <?php endif; ?>
         
         <form method="POST" action="login.php">
             <div class="form-group">

@@ -5,7 +5,6 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -664,6 +663,70 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             background-color: #a8a8a8;
         }
 
+        /* Appointment Table Styles */
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .appointment-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: #f5f7fa;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .appointment-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .appointment-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-scheduled {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Feedback Table Styles */
+        .feedback-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .feedback-table th {
+            text-align: left;
+            padding: 10px;
+            background-color: #f5f7fa;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .feedback-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .feedback-rating {
+            color: #f1c40f;
+        }
+
         /* Gallery Styles */
         .gallery-grid {
             display: grid;
@@ -875,7 +938,7 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
         <div class="header">
             <h1 id="page-title">Customer Dashboard</h1>
             <div class="user-info">
-                <img id="user-avatar" src="" alt="User">
+                <img id="user-avatar" src="profile.jpg" alt="User">
                 <span id="user-name">Loading...</span>
                 <div class="dropdown-menu">
                     <a href="#" onclick="showPage('profile')"><i class="fas fa-user"></i> Profile</a>
@@ -1124,98 +1187,105 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             </div>
         </div>
 
-        <!-- Book Appointment Page -->
-        <div id="book-appointment-page" class="page-content">
-            <h2><i class="fas fa-calendar-check"></i> Book Appointment</h2>
+         <!-- Book Appointment Page -->
+    <div id="book-appointment-page" class="page-content">
+        <h2><i class="fas fa-calendar-check"></i> Book Appointment</h2>
+        
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label for="appointmentDate">Appointment Date</label>
+                <input type="date" id="appointmentDate" required>
+            </div>
             
-            <form id="appointmentForm">
-                <div class="form-group">
-                    <label for="appointmentDate">Appointment Date</label>
-                    <input type="date" id="appointmentDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="appointmentTime">Appointment Time</label>
-                    <select id="appointmentTime" required>
-                        <option value="">-- Select time --</option>
-                        <option value="09:00">09:00 AM</option>
-                        <option value="10:00">10:00 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="13:00">01:00 PM</option>
-                        <option value="14:00">02:00 PM</option>
-                        <option value="15:00">03:00 PM</option>
-                        <option value="16:00">04:00 PM</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="appointmentPurpose">Purpose</label>
-                    <select id="appointmentPurpose" required>
-                        <option value="">-- Select purpose --</option>
-                        <option value="measurement">Measurement</option>
-                        <option value="consultation">Design Consultation</option>
-                        <option value="fitting">Fitting</option>
-                        <option value="pickup">Order Pickup</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="appointmentNotes">Additional Notes</label>
-                    <textarea id="appointmentNotes" rows="3"></textarea>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-success">Book Appointment</button>
-                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label for="appointmentTime">Appointment Time</label>
+                <select id="appointmentTime" required>
+                    <option value="">-- Select time --</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="appointmentPurpose">Purpose</label>
+                <select id="appointmentPurpose" required>
+                    <option value="">-- Select purpose --</option>
+                    <option value="measurement">Measurement</option>
+                    <option value="consultation">Design Consultation</option>
+                    <option value="fitting">Fitting</option>
+                    <option value="pickup">Order Pickup</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="appointmentNotes">Additional Notes</label>
+                <textarea id="appointmentNotes" rows="3"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Book Appointment</button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
+            </div>
+        </form>
+        
+        <h3 style="margin-top: 30px;"><i class="fas fa-calendar-alt"></i> Your Appointments</h3>
+        <div id="appointments-table">
+            <div class="spinner"></div>
         </div>
+    </div>
 
-        <!-- Feedback Page -->
-        <div id="feedback-page" class="page-content">
-            <h2><i class="fas fa-comment-alt"></i> Provide Feedback</h2>
+    <!-- Feedback Page -->
+    <div id="feedback-page" class="page-content">
+        <h2><i class="fas fa-comment-alt"></i> Provide Feedback</h2>
+        
+        <form id="feedbackForm">
+            <div class="form-group">
+                <label for="feedbackOrder">Order (Optional)</label>
+                <select id="feedbackOrder">
+                    <option value="">-- Select order (optional) --</option>
+                </select>
+            </div>
             
-            <form id="feedbackForm">
-                <div class="form-group">
-                    <label for="feedbackOrder">Order (Optional)</label>
-                    <select id="feedbackOrder">
-                        <option value="">-- Select order (optional) --</option>
-                        ${orders.filter(o => o.status === 'Delivered').map(o => 
-                            `<option value="${o.id}">#${o.id} - ${o.type}</option>`
-                        ).join('')}
-                    </select>
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="rating-stars">
+                    <i class="fas fa-star" data-rating="1"></i>
+                    <i class="fas fa-star" data-rating="2"></i>
+                    <i class="fas fa-star" data-rating="3"></i>
+                    <i class="fas fa-star" data-rating="4"></i>
+                    <i class="fas fa-star" data-rating="5"></i>
                 </div>
-                
-                <div class="form-group">
-                    <label>Rating</label>
-                    <div class="rating-stars">
-                        <i class="fas fa-star" data-rating="1"></i>
-                        <i class="fas fa-star" data-rating="2"></i>
-                        <i class="fas fa-star" data-rating="3"></i>
-                        <i class="fas fa-star" data-rating="4"></i>
-                        <i class="fas fa-star" data-rating="5"></i>
-                    </div>
-                    <input type="hidden" id="feedbackRating" value="0">
-                </div>
-                
-                <div class="form-group">
-                    <label for="feedbackMessage">Your Feedback</label>
-                    <textarea id="feedbackMessage" rows="5" required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="feedbackPhotos">Upload Photos (Optional)</label>
-                    <input type="file" id="feedbackPhotos" multiple>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-success">Submit Feedback</button>
-                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
-                </div>
-            </form>
+                <input type="hidden" id="feedbackRating" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="feedbackMessage">Your Feedback</label>
+                <textarea id="feedbackMessage" rows="5" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="feedbackPhotos">Upload Photos (Optional)</label>
+                <input type="file" id="feedbackPhotos" multiple>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Submit Feedback</button>
+                <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')">Cancel</button>
+            </div>
+        </form>
+        
+        <h3 style="margin-top: 30px;"><i class="fas fa-history"></i> Your Previous Feedback</h3>
+        <div id="feedback-history-table">
+            <div class="spinner"></div>
         </div>
+    </div>
 
         <!-- Gallery Page -->
         <div id="gallery-page" class="page-content">
@@ -1224,16 +1294,16 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             
             <div class="gallery-grid">
                 <div class="gallery-item">
-                    <img src="https://via.placeholder.com/300x200?text=Suit+Design" alt="Suit Design">
+                    <img src="dress.jpg" alt="Suit Design">
                 </div>
                 <div class="gallery-item">
-                    <img src="https://via.placeholder.com/300x200?text=Dress+Design" alt="Dress Design">
+                    <img src="top2.jpg" alt="Dress Design">
                 </div>
                 <div class="gallery-item">
-                    <img src="https://via.placeholder.com/300x200?text=Shirt+Design" alt="Shirt Design">
+                    <img src="shirt1.jpg" alt="Shirt Design">
                 </div>
                 <div class="gallery-item">
-                    <img src="https://via.placeholder.com/300x200?text=Traditional+Design" alt="Traditional Design">
+                    <img src="top4.jpg" alt="Traditional Design">
                 </div>
                 <div class="gallery-item">
                     <div class="add-design" onclick="document.getElementById('designUploadInput').click()">
@@ -1517,6 +1587,8 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
         let orders = [];
         let payments = [];
         let notifications = [];
+        let appointments = [];
+        let feedbacks = [];
         let ordersChart = null;
 
         // Initialize the dashboard
@@ -1525,11 +1597,186 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             loadOrders();
             loadPayments();
             loadNotifications();
+            loadAppointments();
+            loadFeedbacks();
             initializeForms();
             setupEventListeners();
             setMinDeliveryDate();
             setMinAppointmentDate();
         });
+
+        function loadAppointments() {
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                appointments = [
+                    {
+                        id: 'APT1001',
+                        date: '2023-06-15',
+                        time: '10:00',
+                        purpose: 'Measurement',
+                        notes: 'Need measurements for new suit',
+                        status: 'Completed',
+                        createdAt: '2023-06-10T09:30:00Z'
+                    },
+                    {
+                        id: 'APT1002',
+                        date: '2023-06-20',
+                        time: '14:00',
+                        purpose: 'Fitting',
+                        notes: 'First fitting for the wedding dress',
+                        status: 'Scheduled',
+                        createdAt: '2023-06-12T11:15:00Z'
+                    },
+                    {
+                        id: 'APT1003',
+                        date: '2023-06-25',
+                        time: '11:00',
+                        purpose: 'Consultation',
+                        notes: 'Discuss design options for summer collection',
+                        status: 'Scheduled',
+                        createdAt: '2023-06-18T14:45:00Z'
+                    }
+                ];
+                renderAppointments();
+            }, 500);
+        }
+
+        function loadFeedbacks() {
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                feedbacks = [
+                    {
+                        id: 'FDB2001',
+                        orderId: 'ORD4567',
+                        rating: 5,
+                        message: 'Excellent craftsmanship and attention to detail. The suit fits perfectly!',
+                        date: '2023-05-20T16:30:00Z'
+                    },
+                    {
+                        id: 'FDB2002',
+                        orderId: 'ORD4568',
+                        rating: 4,
+                        message: 'Very happy with the dress, just took a bit longer than expected.',
+                        date: '2023-06-05T10:15:00Z'
+                    }
+                ];
+                renderFeedbackHistory();
+            }, 500);
+        }
+
+        function renderAppointments() {
+            const container = document.getElementById('appointments-table');
+            
+            if (appointments.length === 0) {
+                container.innerHTML = '<p>No appointments found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="appointment-table">
+                    <tr>
+                        <th>Appointment ID</th>
+                        <th>Date & Time</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+            `;
+            
+            appointments.forEach(appointment => {
+                const statusClass = appointment.status === 'Scheduled' ? 'status-scheduled' : 
+                                    appointment.status === 'Completed' ? 'status-completed' : 'status-cancelled';
+                
+                const date = new Date(appointment.date);
+                const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                
+                html += `
+                    <tr>
+                        <td>#${appointment.id}</td>
+                        <td>${formattedDate} at ${appointment.time}</td>
+                        <td>${appointment.purpose}</td>
+                        <td><span class="appointment-status ${statusClass}">${appointment.status}</span></td>
+                        <td>
+                            ${appointment.status === 'Scheduled' ? `
+                                <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${appointment.id}')">Cancel</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function renderFeedbackHistory() {
+            const container = document.getElementById('feedback-history-table');
+            
+            if (feedbacks.length === 0) {
+                container.innerHTML = '<p>No feedback submitted yet.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="feedback-table">
+                    <tr>
+                        <th>Date</th>
+                        <th>Order</th>
+                        <th>Rating</th>
+                        <th>Feedback</th>
+                    </tr>
+            `;
+            
+            feedbacks.forEach(feedback => {
+                const date = new Date(feedback.date);
+                const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                
+                let stars = '';
+                for (let i = 0; i < 5; i++) {
+                    stars += `<i class="fas fa-star${i < feedback.rating ? '' : ' far'}"></i>`;
+                }
+                
+                html += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${feedback.orderId ? '#' + feedback.orderId : 'General Feedback'}</td>
+                        <td class="feedback-rating">${stars}</td>
+                        <td>${feedback.message}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function cancelAppointment(appointmentId) {
+            if (!confirm('Are you sure you want to cancel this appointment?')) {
+                return;
+            }
+            
+            // In a real app, this would be an API call
+            const appointmentIndex = appointments.findIndex(a => a.id === appointmentId);
+            if (appointmentIndex !== -1) {
+                appointments[appointmentIndex].status = 'Cancelled';
+                
+                // Add notification
+                const notification = {
+                    id: 'NOT' + Math.floor(1000 + Math.random() * 9000),
+                    type: 'appointment',
+                    message: `Appointment #${appointmentId} has been cancelled`,
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                notifications.unshift(notification);
+                
+                // Update UI
+                renderAppointments();
+                renderNotifications();
+                
+                showNotification('Appointment cancelled successfully', 'success');
+            }
+        }
 
         function setMinDeliveryDate() {
             const today = new Date();
@@ -1961,6 +2208,77 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
                 updateUserInfo();
                 showNotification('Profile updated successfully!', 'success');
             });
+
+             document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newAppointment = {
+                    id: 'APT' + Math.floor(1000 + Math.random() * 9000),
+                    date: document.getElementById('appointmentDate').value,
+                    time: document.getElementById('appointmentTime').value,
+                    purpose: document.getElementById('appointmentPurpose').value,
+                    notes: document.getElementById('appointmentNotes').value,
+                    status: "Scheduled",
+                    createdAt: new Date().toISOString()
+                };
+                
+                // In a real app, this would be a POST request to the API
+                appointments.unshift(newAppointment);
+                
+                // Add notification
+                const notification = {
+                    id: 'NOT' + Math.floor(1000 + Math.random() * 9000),
+                    type: 'appointment',
+                    message: `New appointment booked for ${newAppointment.date} at ${newAppointment.time}`,
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                notifications.unshift(notification);
+                
+                // Update UI
+                renderAppointments();
+                renderNotifications();
+                
+                showNotification('Appointment booked successfully!', 'success');
+                showPage('dashboard');
+            });
+            
+            // Feedback form submission
+            document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const rating = document.getElementById('feedbackRating').value;
+                const message = document.getElementById('feedbackMessage').value;
+                const orderId = document.getElementById('feedbackOrder').value;
+                
+                const newFeedback = {
+                    id: 'FDB' + Math.floor(1000 + Math.random() * 9000),
+                    orderId: orderId || null,
+                    rating: parseInt(rating),
+                    message: message,
+                    date: new Date().toISOString()
+                };
+                
+                // In a real app, this would be a POST request to the API
+                feedbacks.unshift(newFeedback);
+                
+                // Add notification
+                const notification = {
+                    id: 'NOT' + Math.floor(1000 + Math.random() * 9000),
+                    type: 'feedback',
+                    message: `Feedback submitted ${orderId ? 'for order #' + orderId : ''}`,
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                notifications.unshift(notification);
+                
+                // Update UI
+                renderFeedbackHistory();
+                renderNotifications();
+                
+                showNotification('Thank you for your feedback!', 'success');
+                showPage('dashboard');
+            });
             
             // Order form submission
             document.getElementById('orderForm').addEventListener('submit', function(e) {
@@ -1989,8 +2307,18 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
                 
                 // In a real app, this would be a POST request to the API
                 orders.unshift(newOrder);
+
+                 // Add notification
+                const notification = {
+                    id: 'NOT' + Math.floor(1000 + Math.random() * 9000),
+                    type: 'order',
+                    message: `New order placed (#${newOrder.id}) for ${newOrder.type}`,
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                notifications.unshift(notification);
                 
-                // If payment was made, create a payment record
+                 // If payment was made, create a payment record
                 if (paymentStatus === 'Paid') {
                     const newPayment = {
                         id: 'PAY' + Math.floor(2000 + Math.random() * 1000),
@@ -2000,9 +2328,19 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
                         method: paymentMethod
                     };
                     payments.unshift(newPayment);
+                    
+                    // Add payment notification
+                    const paymentNotification = {
+                        id: 'NOT' + Math.floor(1000 + Math.random() * 9000),
+                        type: 'payment',
+                        message: `Payment of $${newOrder.amount.toFixed(2)} received for order #${newOrder.id}`,
+                        date: new Date().toISOString(),
+                        read: false
+                    };
+                    notifications.unshift(paymentNotification);
                 }
                 
-                // Update UI
+               // Update UI
                 updateStats();
                 renderActiveOrders();
                 renderTrackOrders();
@@ -2010,11 +2348,55 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
                 renderMakePayments();
                 renderPaymentHistory();
                 renderOrdersChart();
+                renderNotifications();
                 
                 showNotification('Order placed successfully!', 'success');
                 showPage('track-orders');
             });
+        }
+
+         // Update renderNotifications to show all activity
+        function renderNotifications() {
+            const container = document.getElementById('notifications-table');
             
+            if (notifications.length === 0) {
+                container.innerHTML = '<p>No notifications found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="order-table">
+                    <tr>
+                        <th>Date</th>
+                        <th>Message</th>
+                        <th>Type</th>
+                    </tr>
+            `;
+            
+            notifications.forEach(notification => {
+                const icon = notification.type === 'order' ? 'fas fa-clipboard-list' : 
+                            notification.type === 'payment' ? 'fas fa-money-bill-wave' : 
+                            notification.type === 'appointment' ? 'fas fa-calendar-check' : 
+                            notification.type === 'feedback' ? 'fas fa-comment-alt' : 'fas fa-bell';
+                
+                html += `
+                    <tr>
+                        <td>${new Date(notification.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td>
+                            <i class="${icon}" style="margin-right: 8px;"></i>
+                            ${notification.message}
+                        </td>
+                        <td>${notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+
+
             // Appointment form submission
             document.getElementById('appointmentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2112,7 +2494,6 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
                     showPage('payment-history');
                 }
             });
-        }
 
         function setupEventListeners() {
             // Payment method change handler in order form

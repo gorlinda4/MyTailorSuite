@@ -1,66 +1,3 @@
-<?php
-require_once 'auth.php';
-
-$auth = new Auth();
-
-if ($auth->isLoggedIn()) {
-    // Redirect to dashboard if already logged in
-    header('Location: index.php');
-    exit();
-}
-
-$error = '';
-$success = '';
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = [
-        'username' => $_POST['username'] ?? '',
-        'email' => $_POST['email'] ?? '',
-        'password' => $_POST['password'] ?? '',
-        'first_name' => $_POST['first_name'] ?? '',
-        'last_name' => $_POST['last_name'] ?? '',
-        'phone' => $_POST['phone'] ?? '',
-        'address' => $_POST['address'] ?? '',
-        'role' => $_POST['role'] ?? 'customer'
-    ];
-    
-    // Add role-specific data
-    switch ($data['role']) {
-        case 'customer':
-            $data['measurements'] = [
-                'chest' => $_POST['chest'] ?? 0,
-                'waist' => $_POST['waist'] ?? 0,
-                'hips' => $_POST['hips'] ?? 0,
-                'length' => $_POST['length'] ?? 0
-            ];
-            $data['preferred_payment_method'] = $_POST['preferred_payment_method'] ?? 'mpesa';
-            break;
-            
-        case 'tailor':
-            $data['specialty'] = $_POST['specialty'] ?? 'General';
-            $data['experience_years'] = $_POST['experience_years'] ?? 0;
-            $data['hourly_rate'] = $_POST['hourly_rate'] ?? 0;
-            $data['status'] = $_POST['status'] ?? 'available';
-            break;
-            
-        case 'manager':
-            $data['department'] = $_POST['department'] ?? 'General';
-            $data['access_level'] = $_POST['access_level'] ?? 1;
-            break;
-    }
-    
-    $result = $auth->register($data);
-    
-    if ($result['status'] === 'success') {
-        $success = 'Registration successful! You can now login.';
-        header('Refresh: 3; URL=login.php');
-    } else {
-        $error = $result['message'];
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -228,18 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <i class="fas fa-cut"></i>
             <h1>TailorSuite</h1>
         </div>
-        
-        <?php if ($error): ?>
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="success-message">
-                <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($success); ?>
-            </div>
-        <?php endif; ?>
         
         <form method="POST" action="register.php">
             <div class="form-row">
