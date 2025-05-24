@@ -2007,6 +2007,18 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "tailor") {
             }, 1500);
         }
 
+        function loadTailorStats() {
+  fetch('api.php?action=tailor_stats')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("assigned-orders").textContent = data.assigned_orders;
+      document.getElementById("completed-orders").textContent = data.completed_orders;
+    });
+}
+setInterval(loadTailorStats, 5000);
+loadTailorStats();
+
+
         // Close modal when clicking outside of it
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');

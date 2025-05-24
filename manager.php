@@ -3084,6 +3084,19 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "manager") {
             }, 1500);
         }
 
+        function loadManagerStats() {
+  fetch('api.php?action=manager_stats')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("total-orders").textContent = data.total_orders;
+      document.getElementById("pending-orders").textContent = data.pending_orders;
+      document.getElementById("completed-orders").textContent = data.completed_orders;
+    });
+}
+setInterval(loadManagerStats, 5000);
+loadManagerStats();
+
+
         // Close modal when clicking outside of it
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');

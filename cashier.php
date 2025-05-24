@@ -1771,6 +1771,19 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "cashier") {
             }, 3000);
         }
 
+       function loadCashierStats() {
+  fetch('api.php?action=cashier_stats')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("todays-payments").textContent = `$${data.todays_payments.toFixed(2)}`;
+      document.getElementById("total-transactions").textContent = data.total_transactions;
+    });
+}
+setInterval(loadCashierStats, 5000);
+loadCashierStats();
+
+
+
         // Close modal when clicking outside of it
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');

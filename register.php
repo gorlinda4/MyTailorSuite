@@ -1,3 +1,27 @@
+<?php
+session_start();
+require 'db.php'; // Make sure this file connects to your database
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $first = $_POST['first_name'];
+    $last = $_POST['last_name'];
+    $username = $_POST['username'];
+    $email = $_POST['email'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $phone = $_POST['phone'];
+    $address = $_POST['address'];
+    $role = $_POST['role'];
+
+    // Insert into users table
+    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, username, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$first, $last, $username, $email, $password, $phone, $address, $role]);
+
+    // Redirect to login
+    header("Location: login.php?registered=1");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

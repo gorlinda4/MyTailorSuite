@@ -2829,6 +2829,18 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             document.getElementById('deleteModal').style.display = 'flex';
         }
 
+        function loadCustomerStats() {
+  fetch('api.php?action=customer_stats')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("customer-total-orders").textContent = data.total_orders;
+      document.getElementById("customer-completed-orders").textContent = data.completed_orders;
+    });
+}
+setInterval(loadCustomerStats, 5000);
+loadCustomerStats();
+
+
         function showNotification(message, type) {
             const notification = document.getElementById('notification-toast');
             const notificationMsg = document.getElementById('notification-message');
@@ -2852,6 +2864,8 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
             
             // Show notification
             notification.classList.add('show');
+
+            
             
             // Hide after 3 seconds
             setTimeout(() => {
