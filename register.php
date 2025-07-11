@@ -1,26 +1,52 @@
-<?php
-session_start();
-require 'db.php'; // Make sure this file connects to your database
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $first = $_POST['first_name'];
-    $last = $_POST['last_name'];
+<?php
+require 'db.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $first_name = $_POST['first_name'];
+    $last_name = $_POST['last_name'];
     $phone = $_POST['phone'];
     $address = $_POST['address'];
     $role = $_POST['role'];
 
-    // Insert into users table
-    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, username, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$first, $last, $username, $email, $password, $phone, $address, $role]);
+    try {
+        $pdo->beginTransaction();
 
-    // Redirect to login
-    header("Location: login.php?registered=1");
-    exit();
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, first_name, last_name, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $password, $first_name, $last_name, $phone, $address, $role]);
+        $user_id = $pdo->lastInsertId();
+
+        switch ($role) {
+            case 'customer':
+                $stmt = $pdo->prepare("INSERT INTO customer_details (customer_id) VALUES (?)");
+                break;
+            case 'tailor':
+                $stmt = $pdo->prepare("INSERT INTO tailor_details (tailor_id) VALUES (?)");
+                break;
+            case 'manager':
+                $stmt = $pdo->prepare("INSERT INTO manager_details (manager_id) VALUES (?)");
+                break;
+            case 'cashier':
+                $stmt = $pdo->prepare("INSERT INTO cashier_details (cashier_id) VALUES (?)");
+                break;
+            case 'admin':
+                $stmt = $pdo->prepare("INSERT INTO admin_details (admin_id) VALUES (?)");
+                break;
+        }
+        $stmt->execute([$user_id]);
+
+        $pdo->commit();
+        header("Location: login.php");
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        die("Registration failed: " . $e->getMessage());
+    }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

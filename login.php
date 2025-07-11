@@ -1,26 +1,3 @@
-<?php
-session_start();
-require 'db.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$username, $username]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role'];
-        header("Location: dashboard.php");
-        exit();
-    } else {
-        echo "<script>alert('Invalid credentials'); window.location.href='login.php';</script>";
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

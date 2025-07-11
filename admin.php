@@ -1,11 +1,3 @@
-<?php
-session_start();
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
-    header("Location: login.php");
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -683,19 +675,7 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
         </div>
 
         <!-- Dashboard Page -->
-        <div id="dashboard-page" class="page-content active">
-            <div class="card">
-  <h3>Total Users</h3>
-  <p><span id="total-users">...</span></p>
-</div>
-<div class="card">
-  <h3>Total Orders</h3>
-  <p><span id="total-orders">...</span></p>
-</div>
-<div class="card">
-  <h3>Total Revenue</h3>
-  <p><span id="total-revenue">...</span></p>
-</div>
+      
 
             <!-- Stats Cards -->
             <div class="stats-container">

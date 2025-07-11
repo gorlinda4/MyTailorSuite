@@ -1,10 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
-    header("Location: login.php");
-    exit;
-}
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1037,7 +1031,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "customer") {
         <div id="new-order-page" class="page-content">
             <h2><i class="fas fa-plus-circle"></i> Place New Order</h2>
             
-            <form id="orderForm">
+           
+<form id="orderForm" action="place_order.php" method="POST" enctype="multipart/form-data">
+
                 <div class="form-group">
                     <label for="clothingType">Clothing Type</label>
                     <select id="clothingType" required>
